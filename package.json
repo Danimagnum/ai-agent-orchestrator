@@ -5,7 +5,9 @@
     "typecheck": "pnpm --filter @orchestrator/shared build && pnpm -r typecheck",
     "lint": "eslint .",
     "test": "pnpm --filter @orchestrator/shared build && pnpm --filter @orchestrator/api test",
-    "test:e2e": "pnpm --filter @orchestrator/web test:e2e"
+    "test:e2e": "pnpm --filter @orchestrator/web test:e2e",
+    "demo:check": "node scripts/check-demo.mjs",
+    "smoke:compose": "node scripts/smoke-compose.mjs"
   },
   "devDependencies": { "@eslint/js": "^9.39.0", "eslint": "^9.39.0", "typescript-eslint": "^8.46.0", "typescript": "^5.9.3", "@types/node": "^22.18.0" },
   "pnpm": { "onlyBuiltDependencies": ["esbuild", "sharp", "@sentry/cli", "@nestjs/core", "@tailwindcss/oxide"] }

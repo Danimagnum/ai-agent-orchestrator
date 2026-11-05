@@ -60,5 +60,29 @@ jobs:
           path: |
             apps/web/playwright-report
             apps/web/test-results
-      - name: Container build check
-        run: docker compose build
+  containers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      MOCK_LLM: "true"
+      MOCK_CHUNK_DELAY_MS: "15"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build and start the complete stack
+        run: docker compose up --build --wait --wait-timeout 180
+      - name: Verify UI, queue, worker, database and streamed events
+        run: node scripts/smoke-compose.mjs
+      - name: Capture container logs
+        if: always()
+        run: docker compose logs --no-color > /tmp/orchestrator-containers.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: container-logs
+          path: /tmp/orchestrator-containers.log
+      - name: Stop the test stack
+        if: always()
+        run: docker compose down --volumes
