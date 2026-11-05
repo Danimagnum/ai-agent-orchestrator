@@ -6,7 +6,7 @@ Verified locally on **5 November 2026**, using Node.js 24, pnpm 10.28.2, Postgre
 | --- | --- |
 | `pnpm lint` | Passed |
 | `pnpm typecheck` | Passed, including test files and generated Next route types |
-| `pnpm test` | 16 tests passed |
+| `pnpm test` | 17 tests passed |
 | `pnpm build` | Shared package, API and production Next app built successfully |
 | Playwright happy path against the production UI | Passed; desktop 1440px and mobile 390px |
 | Initial TypeORM migration against real PostgreSQL | Applied successfully |
@@ -18,12 +18,15 @@ Verified locally on **5 November 2026**, using Node.js 24, pnpm 10.28.2, Postgre
 | Status/model filters and cursor pagination | Passed; consecutive pages contain distinct run IDs |
 | `docker compose config --quiet` | Passed with the official portable Compose CLI |
 | Git diff whitespace check | Passed |
+| `pnpm demo:check --web-url http://localhost:3107` | Passed: 118 contiguous events recovered, nine-step correction, generic task, budget guard, validation and pagination |
+| `pnpm smoke:compose` against the local native services | Passed: six steps, 68 persisted events; this does not claim container execution |
+| Browser walkthrough recording | Passed: completed task, reviewed result, trace and history; GIF included |
 
 The browser flow checks persisted streamed events, numeric event costs, the reviewed result, graph visibility, trace steps, history filtering and mobile horizontal overflow. Screenshots in this folder were captured from the running production app.
 
 ## Verification limits
 
-- This Windows environment has no Docker engine or WSL installation. Full Linux container build/startup was **not executed locally**. The committed GitHub Actions workflow includes a container-build check, but no remote CI run has been initiated.
+- This Windows environment has no Docker engine or WSL installation. Full Linux container build/startup was **not executed locally**. The committed GitHub Actions workflow includes a separate five-service Compose startup and smoke-test job, but no remote CI run has been initiated.
 - Live paid OpenAI/Anthropic calls were **not executed**. Provider protocols are verified with mocked SSE responses; the full queue/database/browser flow uses `MOCK_LLM=true`.
 - Sentry is optional and was exercised with no DSN. Delivery to a configured Sentry project remains unverified.
 - This is a functional MVP check, not a load test or a claim of production readiness.
@@ -35,3 +38,12 @@ The browser flow checks persisted streamed events, numeric event costs, the revi
 - [Reviewed result and trace](completed-run.png)
 - [History and model comparison](history.png)
 - [Mobile execution](mobile-run.png)
+- [Recorded browser walkthrough](demo.gif)
+
+## Final demo closure
+
+The agreed acceptance mode is **mock, without API keys**. The final production web app is running locally at `http://localhost:3107`; the API is at `http://localhost:4000`. The PostgreSQL and Redis instances used for this check are isolated local services. The portable Docker Compose CLI accepts the updated configuration, including web readiness.
+
+Acceptance scripts wait for service readiness, so a check started immediately after launch tolerates startup time. The generic mock scenario was corrected and regression-tested so unrelated tasks no longer receive the broker-comparison response. No new project dependencies were added during this closure.
+
+Follow [PROBAR-DEMO.md](PROBAR-DEMO.md) for the five-minute manual acceptance route and reproducible check commands. Live provider and Sentry delivery checks are outside this agreed mock acceptance; they are not blockers to trying this demo.

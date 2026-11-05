@@ -4,7 +4,11 @@ A small, observable multi-agent system. Give it a task, watch a Director delegat
 
 Built as a weekend-sized portfolio MVP with **NestJS 11**, **Next.js 15 / React 19**, **PostgreSQL / TypeORM**, **Redis / BullMQ**, and **Socket.IO**. OpenAI and Anthropic adapters share the same orchestration path as a deterministic, key-free demo.
 
-> **Demo GIF placeholder:** add a 15–30 second recording at `docs/demo.gif` showing submission → parallel agents → review → history. The Playwright test captures real desktop and mobile screenshots.
+![Recorded demo: task submission, parallel agents, reviewed result and history](docs/demo.gif)
+
+The recording shows the actual running application in mock mode. The Playwright test also captures desktop and mobile screenshots.
+
+Spanish acceptance guide: [Prueba final de la demo](docs/PROBAR-DEMO.md).
 
 ## Run it
 
@@ -141,11 +145,13 @@ pnpm --filter @orchestrator/web exec playwright install chromium
 pnpm test:e2e
 ```
 
+With the mock stack running, `pnpm demo:check` verifies socket reconnection/replay, a corrective review cycle, a generic task, budget exhaustion, validation, and history pagination. Use `--web-url http://localhost:3107` for an alternate local web port or `--socket-url` to receive events from another API instance. The check refuses to create runs against live providers. `pnpm smoke:compose` verifies the UI and a persisted six-step execution after Compose startup.
+
 The Playwright happy path needs the API, worker, database and Redis running in mock mode. It starts the web development server if necessary. To test an already-running production UI, set `PLAYWRIGHT_BASE_URL`. It verifies submission, live socket connection, reload recovery, reviewed output, the six-step trace, numeric event costs, persisted events, history filtering, and mobile overflow. Screenshots and failure traces are written under `apps/web/test-results`.
 
 Vitest uses mocked providers for delegation, review/correction limits, budget checks, timeouts, transient retry behavior, malformed tools, configurable models, and streaming protocols. No paid API calls are used by CI.
 
-GitHub Actions runs lint, typecheck, unit tests, builds, migrations, Playwright with real PostgreSQL/Redis services, and container builds. Browser artifacts are uploaded even when a test fails. Linux builds produce Next’s standalone output; Windows builds use standard output because symlinks require Developer Mode.
+GitHub Actions runs lint, typecheck, unit tests, builds, migrations and Playwright with real PostgreSQL/Redis services. A separate job builds and starts all five Compose services, then verifies the UI and a persisted run. Browser artifacts and container logs are retained even on failure. Linux builds produce Next’s standalone output; Windows builds use standard output because symlinks require Developer Mode.
 
 ## Design decisions and trade-offs
 
