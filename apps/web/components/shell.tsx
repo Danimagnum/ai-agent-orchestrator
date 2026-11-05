@@ -33,7 +33,7 @@ export function Shell({ children }: {
       </div>
       <nav aria-label="Main navigation">
         <Link href="/" className={path === '/' || path.startsWith('/runs') ? 'nav-link active' : 'nav-link'}>
-          <Icon name="graph" /> Playground <span className="nav-key">⌘ 1</span>
+          <Icon name="graph" /> Playground
         </Link>
         <Link href="/history" className={`nav-link ${path === '/history' ? 'active' : ''}`}>
           <Icon name="history" /> Run history</Link>

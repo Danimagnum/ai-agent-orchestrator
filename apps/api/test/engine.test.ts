@@ -51,6 +51,14 @@ function setup(provider: LLMProvider = new MockProvider(0)) {
   return { store, engine: new Orchestrator(store, provider, options) };
 }
 describe('orchestration', () => {
+  it('keeps generic demo tasks on topic instead of returning a broker comparison', async () => {
+    const { store, engine } = setup();
+    store.run.task = 'Design an onboarding flow for a collaborative notes app';
+    const run = await engine.execute('test');
+    expect(run.status).toBe('completed');
+    expect(run.result).toContain(store.run.task);
+    expect(run.steps.map(step => step.output).join('\n')).not.toMatch(/Kafka|RabbitMQ|coffee ritual/);
+  });
   it('keeps tool-only provider responses inspectable in the trace', async () => {
     const mock = new MockProvider(0);
     const { engine } = setup({ complete: async (...args) => {
