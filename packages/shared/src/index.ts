@@ -30,7 +30,7 @@ export interface Run extends Usage {
   id: string; task: string; status: Status; agentConfig: AgentConfig; maxCostUsd: number;
   pricing: Record<string, { input: number; output: number }>; mock: boolean;
   result: string | null; error: string | null; createdAt: string; startedAt: string | null;
-  endedAt: string | null; latencyMs: number | null; steps: Step[];
+  endedAt: string | null; latencyMs: number | null; steps: Step[]; eventCursor?: number;
 }
 type EventPayloads = {
   'run.started': { status: 'running' };
