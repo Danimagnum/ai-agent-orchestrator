@@ -27,5 +27,7 @@ export class Initial1730000000000 implements MigrationInterface {
     await q.query('CREATE INDEX steps_model_run ON steps (model, "runId")');
     await q.query('CREATE INDEX events_pending ON run_events ("createdAt") WHERE "publishedAt" IS NULL');
   }
-  async down(q: QueryRunner) { await q.query('DROP TABLE run_events, steps, runs'); }
+  async down(q: QueryRunner) {
+    await q.query('DROP TABLE run_events, steps, runs');
+  }
 }

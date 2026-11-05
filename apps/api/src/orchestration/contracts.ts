@@ -1,8 +1,29 @@
 import type { Agent, EventType, Run, RunEvent, Step, Usage } from '@orchestrator/shared';
-export interface Tool { name: string; description: string; parameters: Record<string, unknown> }
-export interface Call { agent: Agent; model: string; input: string; system: string; tools?: Tool[]; maxTokens: number }
-export interface Completion { text: string; toolCalls: { name: string; arguments: unknown }[]; promptTokens: number; completionTokens: number }
-export interface LLMProvider { complete(call: Call, onChunk: (chunk: string) => Promise<void>, signal: AbortSignal): Promise<Completion> }
+export interface Tool {
+  name: string;
+  description: string;
+  parameters: Record<string, unknown>;
+}
+export interface Call {
+  agent: Agent;
+  model: string;
+  input: string;
+  system: string;
+  tools?: Tool[];
+  maxTokens: number;
+}
+export interface Completion {
+  text: string;
+  toolCalls: {
+    name: string;
+    arguments: unknown;
+  }[];
+  promptTokens: number;
+  completionTokens: number;
+}
+export interface LLMProvider {
+  complete(call: Call, onChunk: (chunk: string) => Promise<void>, signal: AbortSignal): Promise<Completion>;
+}
 export interface RunStore {
   load(id: string): Promise<Run>;
   start(id: string): Promise<boolean>;

@@ -5,23 +5,160 @@ import { modelSchema, statusSchema, type HistoryResult } from '@orchestrator/sha
 import { api, duration, modelLabel, money } from '../lib/api';
 import { Icon } from './icon';
 export function History() {
-  const [status, setStatus] = useState(''); const [model, setModel] = useState(''); const [from, setFrom] = useState(''); const [to, setTo] = useState('');
-  const [data, setData] = useState<HistoryResult | null>(null); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
-  function query() { const p = new URLSearchParams(); if (status) p.set('status', status); if (model) p.set('model', model); if (from) p.set('from', new Date(`${from}T00:00:00`).toISOString()); if (to) p.set('to', new Date(`${to}T23:59:59.999`).toISOString()); return p; }
+  const [status, setStatus] = useState('');
+  const [model, setModel] = useState('');
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [data, setData] = useState<HistoryResult | null>(null);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  function query() {
+    const p = new URLSearchParams();
+    if (status)
+      p.set('status', status);
+    if (model)
+      p.set('model', model);
+    if (from)
+      p.set('from', new Date(`${from}T00:00:00`).toISOString());
+    if (to)
+      p.set('to', new Date(`${to}T23:59:59.999`).toISOString());
+    return p;
+  }
   useEffect(() => {
-    const controller = new AbortController(); setBusy(true); setError('');
-    void api<HistoryResult>(`/runs?${query()}`, { signal: controller.signal }).then(setData).catch(e => { if (!controller.signal.aborted) setError(e.message); }).finally(() => { if (!controller.signal.aborted) setBusy(false); });
+    const controller = new AbortController();
+    setBusy(true);
+    setError('');
+    void api<HistoryResult>(`/runs?${query()}`, { signal: controller.signal }).then(setData).catch(e => {
+      if (!controller.signal.aborted)
+        setError(e.message);
+    }).finally(() => {
+      if (!controller.signal.aborted)
+        setBusy(false);
+    });
     return () => controller.abort();
   }, [status, model, from, to]);
   async function more() {
-    if (!data?.nextCursor) return; setBusy(true); setError('');
-    try { const p = query(); p.set('cursor', data.nextCursor); const next = await api<HistoryResult>(`/runs?${p}`); setData({ ...next, items: [...data.items, ...next.items] }); }
-    catch (e) { setError(e instanceof Error ? e.message : 'Could not load runs'); } finally { setBusy(false); }
+    if (!data?.nextCursor)
+      return;
+    setBusy(true);
+    setError('');
+    try {
+      const p = query();
+      p.set('cursor', data.nextCursor);
+      const next = await api<HistoryResult>(`/runs?${p}`);
+      setData({ ...next, items: [...data.items, ...next.items] });
+    }
+    catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not load runs');
+    }
+    finally {
+      setBusy(false);
+    }
   }
   const maxCost = Math.max(...(data?.models.map(m => m.avgCostUsd) ?? []), 0.000001);
-  return <div className="page history-page"><div className="page-heading"><div><div className="heading-line"><span className="eyebrow-dot"/> Execution archive</div><h1>Every run tells a story.</h1><p>Revisit the work. Compare the models. Find what works.</p></div><Link href="/" className="primary-button"><Icon name="plus" size={16}/>New task</Link></div>
-    <section className="panel history-panel"><div className="panel-header"><div className="section-title"><Icon name="history" size={17}/><h2>Run history</h2><span className="count-badge">{data?.items.length ?? 0} loaded</span></div><span className="muted">Newest first</span></div><div className="filters"><label>Status<select value={status} onChange={e => setStatus(e.target.value)}><option value="">All statuses</option>{statusSchema.options.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}</select></label><label>Model<select value={model} onChange={e => setModel(e.target.value)}><option value="">All models</option>{modelSchema.options.map(m => <option key={m} value={m}>{modelLabel(m)}</option>)}</select></label><label>From<input type="date" value={from} onChange={e => setFrom(e.target.value)}/></label><label>To<input type="date" value={to} min={from || undefined} onChange={e => setTo(e.target.value)}/></label><button className="text-button" onClick={() => { setStatus(''); setModel(''); setFrom(''); setTo(''); }}>Reset filters</button></div>
-    {error && <p className="error-banner" role="alert">{error}</p>}<div className="table-scroll"><table><thead><tr><th>Task</th><th>Status</th><th>Tokens</th><th>Cost</th><th>Latency</th><th>Started</th><th><span className="sr-only">Open run</span></th></tr></thead><tbody>{data?.items.map(run => <tr key={run.id}><td><Link href={`/runs/${run.id}`} className="history-task">{run.task}</Link><small className="history-id">{run.id.slice(0, 8)}<span>{run.mock ? 'Demo' : 'Live'}</span></small></td><td><span className={`status-badge ${run.status}`}>{run.status.replace('_', ' ')}</span></td><td className="mono">{(run.promptTokens + run.completionTokens).toLocaleString()}</td><td className="mono">{money(run.costUsd)}</td><td className="mono">{duration(run.latencyMs)}</td><td className="muted">{new Date(run.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td><td><Link href={`/runs/${run.id}`} aria-label={`Open run: ${run.task}`} className="icon-button"><Icon name="arrow" size={16}/></Link></td></tr>)}</tbody></table></div>{!data?.items.length && <div className="empty-state"><Icon name="history" size={28}/><h3>{busy ? 'Loading runs…' : 'A fresh start.'}</h3><p>{busy ? 'Fetching your execution history.' : 'No runs match these filters. Start a task or adjust your filters.'}</p><Link href="/" className="text-button">Open playground</Link></div>}{data?.nextCursor && <div className="load-more"><button className="secondary-button" onClick={more} disabled={busy}>{busy ? 'Loading…' : 'Load more runs'}</button></div>}</section>
-    <section className="panel model-comparison"><div className="panel-header"><div><h2>Model efficiency</h2><p>Average per completed call across all matching runs.</p></div><span className="outline-tag">Current filters</span></div>{data?.models.length ? <div className="model-grid">{data.models.map(m => <div className="model-stat" key={m.model}><div><span className={`model-provider ${m.model.startsWith('claude') ? 'anthropic' : ''}`}>{m.model.startsWith('claude') ? 'A' : 'O'}</span><h3>{modelLabel(m.model)}</h3></div><span className="muted">{m.calls} completed calls</span><strong>{money(m.avgCostUsd)}<small>avg. cost</small></strong><div className="model-bar"><i style={{ width: `${Math.max(2, m.avgCostUsd / maxCost * 100)}%` }}/></div><p><Icon name="clock" size={14}/>{duration(m.avgLatencyMs)}<span>avg. latency</span></p></div>)}</div> : <p className="empty-inline">Model comparisons appear after your first completed agent call.</p>}</section><p className="history-footnote">Mock runs use simulated tokens and configured prices. Comparisons reflect agent workloads, not a controlled model benchmark.</p>
+  return <div className="page history-page">
+    <div className="page-heading">
+      <div>
+        <div className="heading-line">
+          <span className="eyebrow-dot" /> Execution archive</div>
+        <h1>Every run tells a story.</h1>
+        <p>Revisit the work. Compare the models. Find what works.</p>
+      </div>
+      <Link href="/" className="primary-button">
+        <Icon name="plus" size={16} />New task</Link>
+    </div>
+    <section className="panel history-panel">
+      <div className="panel-header">
+        <div className="section-title">
+          <Icon name="history" size={17} />
+          <h2>Run history</h2>
+          <span className="count-badge">{data?.items.length ?? 0} loaded</span>
+        </div>
+        <span className="muted">Newest first</span>
+      </div>
+      <div className="filters">
+        <label>Status<select value={status} onChange={e => setStatus(e.target.value)}>
+          <option value="">All statuses</option>{statusSchema.options.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}</select>
+        </label>
+        <label>Model<select value={model} onChange={e => setModel(e.target.value)}>
+          <option value="">All models</option>{modelSchema.options.map(m => <option key={m} value={m}>{modelLabel(m)}</option>)}</select>
+        </label>
+        <label>From<input type="date" value={from} onChange={e => setFrom(e.target.value)} />
+        </label>
+        <label>To<input type="date" value={to} min={from || undefined} onChange={e => setTo(e.target.value)} />
+        </label>
+        <button className="text-button" onClick={() => {
+          setStatus('');
+          setModel('');
+          setFrom('');
+          setTo('');
+        }}>Reset filters</button>
+      </div>
+      {error && <p className="error-banner" role="alert">{error}</p>}<div className="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th>Status</th>
+              <th>Tokens</th>
+              <th>Cost</th>
+              <th>Latency</th>
+              <th>Started</th>
+              <th>
+                <span className="sr-only">Open run</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>{data?.items.map(run => <tr key={run.id}>
+            <td>
+              <Link href={`/runs/${run.id}`} className="history-task">{run.task}</Link>
+              <small className="history-id">{run.id.slice(0, 8)}<span>{run.mock ? 'Demo' : 'Live'}</span>
+              </small>
+            </td>
+            <td>
+              <span className={`status-badge ${run.status}`}>{run.status.replace('_', ' ')}</span>
+            </td>
+            <td className="mono">{(run.promptTokens + run.completionTokens).toLocaleString()}</td>
+            <td className="mono">{money(run.costUsd)}</td>
+            <td className="mono">{duration(run.latencyMs)}</td>
+            <td className="muted">{new Date(run.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+            <td>
+              <Link href={`/runs/${run.id}`} aria-label={`Open run: ${run.task}`} className="icon-button">
+                <Icon name="arrow" size={16} />
+              </Link>
+            </td>
+          </tr>)}</tbody>
+        </table>
+      </div>{!data?.items.length && <div className="empty-state">
+        <Icon name="history" size={28} />
+        <h3>{busy ? 'Loading runs…' : 'A fresh start.'}</h3>
+        <p>{busy ? 'Fetching your execution history.' : 'No runs match these filters. Start a task or adjust your filters.'}</p>
+        <Link href="/" className="text-button">Open playground</Link>
+      </div>}{data?.nextCursor && <div className="load-more">
+        <button className="secondary-button" onClick={more} disabled={busy}>{busy ? 'Loading…' : 'Load more runs'}</button>
+      </div>}</section>
+    <section className="panel model-comparison">
+      <div className="panel-header">
+        <div>
+          <h2>Model efficiency</h2>
+          <p>Average per completed call across all matching runs.</p>
+        </div>
+        <span className="outline-tag">Current filters</span>
+      </div>{data?.models.length ? <div className="model-grid">{data.models.map(m => <div className="model-stat" key={m.model}>
+        <div>
+          <span className={`model-provider ${m.model.startsWith('claude') ? 'anthropic' : ''}`}>{m.model.startsWith('claude') ? 'A' : 'O'}</span>
+          <h3>{modelLabel(m.model)}</h3>
+        </div>
+        <span className="muted">{m.calls} completed calls</span>
+        <strong>{money(m.avgCostUsd)}<small>avg. cost</small>
+        </strong>
+        <div className="model-bar">
+          <i style={{ width: `${Math.max(2, m.avgCostUsd / maxCost * 100)}%` }} />
+        </div>
+        <p>
+          <Icon name="clock" size={14} />{duration(m.avgLatencyMs)}<span>avg. latency</span>
+        </p>
+      </div>)}</div> : <p className="empty-inline">Model comparisons appear after your first completed agent call.</p>}</section>
+    <p className="history-footnote">Mock runs use simulated tokens and configured prices. Comparisons reflect agent workloads, not a controlled model benchmark.</p>
   </div>;
 }

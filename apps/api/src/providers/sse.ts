@@ -1,6 +1,7 @@
 // Handles arbitrary UTF-8/network boundaries, CRLF, comments and multiline SSE data.
 export async function* readSSE(response: Response): AsyncGenerator<any> {
-  if (!response.body) throw new Error('Provider returned an empty stream');
+  if (!response.body)
+    throw new Error('Provider returned an empty stream');
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
@@ -13,15 +14,24 @@ export async function* readSSE(response: Response): AsyncGenerator<any> {
         const frame = buffer.slice(0, match.index);
         buffer = buffer.slice(match.index + match[0].length);
         const data = frame.split(/\r?\n/).filter(line => line.startsWith('data:')).map(line => line.slice(5).trimStart()).join('\n');
-        if (data === '[DONE]') return;
-        if (data) yield JSON.parse(data);
+        if (data === '[DONE]')
+          return;
+        if (data)
+          yield JSON.parse(data);
       }
-      if (done) break;
+      if (done)
+        break;
     }
-  } finally { await reader.cancel().catch(() => undefined); reader.releaseLock(); }
+  }
+  finally {
+    await reader.cancel().catch(() => undefined);
+    reader.releaseLock();
+  }
 }
 export class ProviderError extends Error {
-  constructor(message: string, readonly retryable: boolean) { super(message); }
+  constructor(message: string, readonly retryable: boolean) {
+    super(message);
+  }
 }
 export async function checked(response: Response) {
   if (!response.ok) {

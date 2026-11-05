@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 test('orchestrates a task, streams its trace, survives reload, and appears in history', async ({ page }, testInfo) => {
-  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'One task. A team of agents.' })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('playground.png'), fullPage: true });
@@ -21,11 +22,21 @@ test('orchestrates a task, streams its trace, survives reload, and appears in hi
   const id = page.url().split('/').at(-1)!;
   const detail = await page.request.get(`http://localhost:4000/runs/${id}`);
   const run = await detail.json();
-  expect(run.steps).toHaveLength(6); expect(run.costUsd).toBeGreaterThan(0); expect(run.steps.every((s: { status: string }) => s.status === 'completed')).toBe(true);
+  expect(run.steps).toHaveLength(6);
+  expect(run.costUsd).toBeGreaterThan(0);
+  expect(run.steps.every((s: {
+    status: string;
+  }) => s.status === 'completed')).toBe(true);
   const events = await (await page.request.get(`http://localhost:4000/runs/${id}/events`)).json();
-  expect(events.some((e: { type: string }) => e.type === 'step.token')).toBe(true);
-  for (const event of events) if (event.payload.step) expect(typeof event.payload.step.costUsd).toBe('number');
-  expect(events.map((e: { sequence: number }) => e.sequence)).toEqual(events.map((_: unknown, i: number) => i + 1));
+  expect(events.some((e: {
+    type: string;
+  }) => e.type === 'step.token')).toBe(true);
+  for (const event of events)
+    if (event.payload.step)
+      expect(typeof event.payload.step.costUsd).toBe('number');
+  expect(events.map((e: {
+    sequence: number;
+  }) => e.sequence)).toEqual(events.map((_: unknown, i: number) => i + 1));
   await page.getByRole('link', { name: 'Run history' }).click();
   await expect(page.getByRole('link', { name: 'Plan a landing page for a coffee shop', exact: true }).first()).toBeVisible();
   await page.getByRole('combobox', { name: 'Status', exact: true }).selectOption('completed');
