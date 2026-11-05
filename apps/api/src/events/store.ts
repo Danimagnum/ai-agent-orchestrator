@@ -21,7 +21,9 @@ export class PostgresStore implements RunStore {
   }
   async begin(step: Step) {
     await this.db.transaction(async tx => {
-      await tx.getRepository(StepEntity).insert(step);
+      // TypeORM insert can merge raw Postgres RETURNING decimals into the supplied object.
+      // Keep the domain event numeric and independent of persistence-side mutation.
+      await tx.createQueryBuilder().insert().into(StepEntity).values(step).updateEntity(false).execute();
       await this.event(tx, step.runId, 'step.started', step.id, { step });
     });
   }
