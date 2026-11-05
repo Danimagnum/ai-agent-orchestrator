@@ -1,0 +1,64 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: orchestrator
+          POSTGRES_PASSWORD: orchestrator
+          POSTGRES_DB: orchestrator
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U orchestrator"
+          --health-interval 3s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7.4-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 3s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgres://orchestrator:orchestrator@localhost:5432/orchestrator
+      REDIS_URL: redis://localhost:6379
+      MOCK_LLM: "true"
+      MOCK_CHUNK_DELAY_MS: "30"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - run: pnpm --filter @orchestrator/api migrate
+      - name: Start API and worker
+        run: |
+          node apps/api/dist/main.js > /tmp/orchestrator-api.log 2>&1 &
+          node apps/api/dist/worker.js > /tmp/orchestrator-worker.log 2>&1 &
+          node -e "const wait=async()=>{for(let i=0;i<60;i++){try{if((await fetch('http://localhost:4000/health')).ok)return}catch{}await new Promise(r=>setTimeout(r,1000))}process.exit(1)};wait()"
+      - run: pnpm --filter @orchestrator/web exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-results
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+      - name: Container build check
+        run: docker compose build
