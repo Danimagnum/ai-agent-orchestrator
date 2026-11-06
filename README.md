@@ -35,6 +35,8 @@ The mock produces repeatable scenario content and simulated token usage. It is e
 
 ### Live providers
 
+The five roles default to Claude Haiku 4.5 with a $0.10 run budget, so a single Anthropic key is sufficient for the initial live configuration. See [local Claude configuration](docs/CLAUDE-LIVE.md). OpenAI models remain configurable and require their own key.
+
 Copy `.env.example` to `.env`, set `MOCK_LLM=false`, and supply keys for the providers selected in your agent configuration. Restart with `docker compose up --build`. Provider keys stay in the API/worker environment and are never bundled into the browser.
 
 The allowlisted model IDs live in `packages/shared/src/index.ts`. Prices in `config/model-pricing.json` are **USD per million input/output tokens**. Verify current availability and rates before enabling live billing. Model and pricing configuration are snapshotted into each run. Changing pricing requires rebuilding/restarting the backend.

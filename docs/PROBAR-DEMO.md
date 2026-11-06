@@ -1,5 +1,7 @@
 # Prueba final de la demo
 
+**Actualización del 6 de noviembre:** la instalación local está ahora en modo real con Anthropic, tras configurar la clave y verificar una ejecución completa. Consulta [CLAUDE-LIVE.md](CLAUDE-LIVE.md). Esta guía conserva las pruebas deterministas del modo mock; `demo:check` se niega a ejecutarlas contra proveedores reales.
+
 Esta entrega se cierra en **modo demo sin claves**, según lo acordado. Las respuestas, tokens y costes están simulados. Se usa el flujo real de API, cola, worker, PostgreSQL, Redis y WebSockets.
 
 ## Abrirla ahora

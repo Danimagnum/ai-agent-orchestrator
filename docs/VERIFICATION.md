@@ -27,7 +27,7 @@ The browser flow checks persisted streamed events, numeric event costs, the revi
 ## Verification limits
 
 - This Windows environment has no Docker engine or WSL installation. Full Linux container build/startup was **not executed locally**. The committed GitHub Actions workflow includes a separate five-service Compose startup and smoke-test job, but no remote CI run has been initiated.
-- Live paid OpenAI/Anthropic calls were **not executed**. Provider protocols are verified with mocked SSE responses; the full queue/database/browser flow uses `MOCK_LLM=true`.
+- The initial acceptance used mock providers. On **6 November 2026**, Anthropic live execution was additionally verified: all five roles, nine steps with one correction, 7,104 input tokens, 2,749 output tokens and $0.020849 calculated cost. See [CLAUDE-LIVE.md](CLAUDE-LIVE.md). OpenAI live calls remain unverified.
 - Sentry is optional and was exercised with no DSN. Delivery to a configured Sentry project remains unverified.
 - This is a functional MVP check, not a load test or a claim of production readiness.
 
@@ -42,8 +42,8 @@ The browser flow checks persisted streamed events, numeric event costs, the revi
 
 ## Final demo closure
 
-The agreed acceptance mode is **mock, without API keys**. The final production web app is running locally at `http://localhost:3107`; the API is at `http://localhost:4000`. The PostgreSQL and Redis instances used for this check are isolated local services. The portable Docker Compose CLI accepts the updated configuration, including web readiness.
+The initial acceptance mode was **mock, without API keys**. The production web app is available locally at `http://localhost:3107`; the API is at `http://localhost:4000`. Following the user's credential setup, this local installation was switched to **live Anthropic mode** and verified on 6 November 2026. The private `.env` is excluded from Git and source archives. PostgreSQL and Redis are isolated local services. The portable Docker Compose CLI accepts the configuration, including web readiness.
 
 Acceptance scripts wait for service readiness, so a check started immediately after launch tolerates startup time. The generic mock scenario was corrected and regression-tested so unrelated tasks no longer receive the broker-comparison response. No new project dependencies were added during this closure.
 
-Follow [PROBAR-DEMO.md](PROBAR-DEMO.md) for the five-minute manual acceptance route and reproducible check commands. Live provider and Sentry delivery checks are outside this agreed mock acceptance; they are not blockers to trying this demo.
+Follow [PROBAR-DEMO.md](PROBAR-DEMO.md) for the original mock acceptance route; its automated mock checks intentionally refuse to generate paid calls. Follow [CLAUDE-LIVE.md](CLAUDE-LIVE.md) for the current live setup and recorded verification. Delivery to Sentry remains unverified.
