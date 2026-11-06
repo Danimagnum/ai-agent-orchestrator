@@ -3,16 +3,16 @@ export const agents = ['Director', 'Researcher', 'Writer', 'Coder', 'Reviewer'] 
 export type Agent = typeof agents[number];
 export const statusSchema = z.enum(['queued', 'running', 'completed', 'failed', 'budget_exceeded']);
 export type Status = z.infer<typeof statusSchema>;
-export const modelSchema = z.enum(['gpt-4.1-mini', 'gpt-4.1', 'claude-sonnet-4-20250514', 'claude-haiku-4-5-20251001']);
+export const modelSchema = z.enum(['gpt-4.1-mini', 'gpt-4.1', 'claude-sonnet-4-20250514', 'claude-sonnet-4-6', 'claude-haiku-4-5-20251001']);
 export type Model = z.infer<typeof modelSchema>;
 export const agentConfigSchema = z.object({
-  Director: modelSchema.default('gpt-4.1-mini'), Researcher: modelSchema.default('claude-haiku-4-5-20251001'),
-  Writer: modelSchema.default('claude-sonnet-4-20250514'), Coder: modelSchema.default('gpt-4.1'), Reviewer: modelSchema.default('gpt-4.1-mini'),
+  Director: modelSchema.default('claude-haiku-4-5-20251001'), Researcher: modelSchema.default('claude-haiku-4-5-20251001'),
+  Writer: modelSchema.default('claude-haiku-4-5-20251001'), Coder: modelSchema.default('claude-haiku-4-5-20251001'), Reviewer: modelSchema.default('claude-haiku-4-5-20251001'),
 });
 export type AgentConfig = z.infer<typeof agentConfigSchema>;
 export const defaultAgentConfig = agentConfigSchema.parse({});
 export const createRunSchema = z.object({
-  task: z.string().trim().min(8).max(4000), maxCostUsd: z.number().min(0.001).max(5).default(0.5), agentConfig: agentConfigSchema.default({})
+  task: z.string().trim().min(8).max(4000), maxCostUsd: z.number().min(0.001).max(5).default(0.1), agentConfig: agentConfigSchema.default({})
 }).strict();
 export const filtersSchema = z.object({
   status: statusSchema.optional(), model: modelSchema.optional(),

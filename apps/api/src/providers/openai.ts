@@ -1,9 +1,9 @@
 import type { Call, Completion, LLMProvider } from '../orchestration/contracts';
-import { checked, readSSE } from './sse';
+import { checked, readSSE, ProviderError } from './sse';
 export class OpenAIProvider implements LLMProvider {
   async complete(call: Call, onChunk: (chunk: string) => Promise<void>, signal: AbortSignal): Promise<Completion> {
     if (!process.env.OPENAI_API_KEY)
-      throw new Error('OPENAI_API_KEY is required when MOCK_LLM=false');
+      throw new ProviderError('OPENAI_API_KEY is required when MOCK_LLM=false', false);
     const response = await checked(await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST', signal, headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({

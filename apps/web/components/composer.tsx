@@ -18,7 +18,7 @@ export function Composer() {
   const router = useRouter();
   const [task, setTask] = useState('');
   const [config, setConfig] = useState<AgentConfig>(defaultAgentConfig);
-  const [budget, setBudget] = useState('0.50');
+  const [budget, setBudget] = useState('0.10');
   const [advanced, setAdvanced] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -66,7 +66,7 @@ export function Composer() {
             <button className="primary-button" disabled={busy || task.trim().length < 8}>{busy ? 'Starting team…' : 'Run task'}<Icon name="arrow" size={16} />
             </button>
           </div>
-          {advanced && <div className="config-grid">{agents.map(a => <label key={a}>{a}<select value={config[a]} onChange={e => setConfig({ ...config, [a]: e.target.value as Model })}>{modelSchema.options.map(m => <option key={m} value={m}>{modelLabel(m)}</option>)}</select>
+          {advanced && <div className="config-grid">{agents.map(a => <label key={a}>{a}<select value={config[a]} onChange={e => setConfig({ ...config, [a]: e.target.value as Model })}>{modelSchema.options.filter(model => model !== 'claude-sonnet-4-20250514').map(m => <option key={m} value={m}>{modelLabel(m)}</option>)}</select>
           </label>)}<label>Maximum cost (USD)<input type="number" min="0.001" max="5" step="0.001" value={budget} required onChange={e => setBudget(e.target.value)} />
             </label>
           </div>}

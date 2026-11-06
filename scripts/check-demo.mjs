@@ -91,9 +91,10 @@ async function main() {
 
   const budget = await terminal((await create({ task: 'Plan a landing page for a coffee shop', maxCostUsd: 0.001 })).id);
   assert.equal(budget.status, 'budget_exceeded');
-  const first = await json('/runs?limit=1&status=completed&model=gpt-4.1-mini');
+  const historyModel = encodeURIComponent(reviewed.agentConfig.Director);
+  const first = await json(`/runs?limit=1&status=completed&model=${historyModel}`);
   assert.ok(first.nextCursor && first.models.length);
-  const second = await json(`/runs?limit=1&status=completed&model=gpt-4.1-mini&cursor=${encodeURIComponent(first.nextCursor)}`);
+  const second = await json(`/runs?limit=1&status=completed&model=${historyModel}&cursor=${encodeURIComponent(first.nextCursor)}`);
   assert.notEqual(first.items[0].id, second.items[0].id);
   console.log(JSON.stringify({ status: 'passed', mode: 'mock', streamedEvents: eventCount, reconnectReplay: true, reviewSteps: reviewed.steps.length, genericTask: true, budgetGuard: budget.status, validation: true, cursorPagination: true }, null, 2));
 }

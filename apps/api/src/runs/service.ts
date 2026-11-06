@@ -33,6 +33,14 @@ export async function getRun(id: string) {
 }
 export async function createRun(body: unknown) {
   const parsed = validate(createRunSchema, body);
+  if (!mockMode) {
+    const needsAnthropic = Object.values(parsed.agentConfig).some(model => model.startsWith('claude'));
+    const needsOpenAI = Object.values(parsed.agentConfig).some(model => model.startsWith('gpt'));
+    if (needsAnthropic && !process.env.ANTHROPIC_API_KEY)
+      throw new BadRequestException('Anthropic is not configured. Configure ANTHROPIC_API_KEY or choose an available provider.');
+    if (needsOpenAI && !process.env.OPENAI_API_KEY)
+      throw new BadRequestException('OpenAI is not configured. Choose Claude models for all agents or configure OPENAI_API_KEY.');
+  }
   const run = await store.create({ ...parsed, pricing, mock: mockMode });
   // Queued rows are reconciled periodically if the process dies before this enqueue.
   try {

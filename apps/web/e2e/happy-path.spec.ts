@@ -41,7 +41,7 @@ test('orchestrates a task, streams its trace, survives reload, and appears in hi
   await expect(page.getByRole('link', { name: 'Plan a landing page for a coffee shop', exact: true }).first()).toBeVisible();
   await page.getByRole('combobox', { name: 'Status', exact: true }).selectOption('completed');
   await expect(page.getByRole('heading', { name: 'Model efficiency' })).toBeVisible();
-  await expect(page.getByText('GPT-4.1 mini', { exact: true }).last()).toBeVisible();
+  await expect(page.getByText('Claude Haiku 4.5', { exact: true }).last()).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('history.png'), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`/runs/${id}`);

@@ -1,9 +1,9 @@
 import type { Call, Completion, LLMProvider } from '../orchestration/contracts';
-import { checked, readSSE } from './sse';
+import { checked, readSSE, ProviderError } from './sse';
 export class AnthropicProvider implements LLMProvider {
   async complete(call: Call, onChunk: (chunk: string) => Promise<void>, signal: AbortSignal): Promise<Completion> {
     if (!process.env.ANTHROPIC_API_KEY)
-      throw new Error('ANTHROPIC_API_KEY is required when MOCK_LLM=false');
+      throw new ProviderError('ANTHROPIC_API_KEY is required when MOCK_LLM=false', false);
     const response = await checked(await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST', signal, headers: {
         'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json'
