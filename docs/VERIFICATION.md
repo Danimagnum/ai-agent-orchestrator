@@ -18,7 +18,7 @@ Verified against an isolated five-container Docker Desktop stack (`orchestrator-
 
 Not yet verified: GHCR publication/archive workflow, Docker 20.10 loading and SHA-256 transfer on the Synology, NAS memory capacity, Kafka/contract tests, health events, worker heartbeat, Core authentication/wallet/quotas, Trackflow postmortem acceptance and its live Claude video. Current endpoints report API health and PostgreSQL/Redis dependencies only. The previous Claude run below is not evidence of the new integration.
 
-The new CI container checks inject dependency failures and corrupt token aggregation, require the expected failures, restore the implementation, and verify recovery. Image publication is gated by successful push CI. Remote CI/PR evidence will be recorded after the branch is published.
+The new CI container checks inject dependency failures and corrupt token aggregation, require the expected failures, restore the implementation, and verify recovery. Image publication is gated by successful push CI. Review: [PR #1](https://github.com/Danimagnum/ai-agent-orchestrator/pull/1). Latest execution evidence is available under [branch CI runs](https://github.com/Danimagnum/ai-agent-orchestrator/actions/workflows/ci.yml?query=branch%3Acodex%2Fplatform-foundations); check the run's commit before treating it as evidence for a revision. At documentation time, remote checks are still running; local verification above is complete.
 
 Verified locally on **5 November 2026**, using Node.js 24, pnpm 10.28.2, PostgreSQL 17.11 and Redis 7.4.6. CI targets Node.js 22 on Linux.
 
