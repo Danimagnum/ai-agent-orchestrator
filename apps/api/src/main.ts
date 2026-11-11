@@ -11,8 +11,9 @@ import { RedisIoAdapter } from './realtime/adapter';
 import { redis, queue, queueConnection, reconcileQueue } from './runs/service';
 import { webOrigin } from './config';
 import { Sentry } from './observability/instrument';
+import { ObservabilityController } from './observability/controller';
 @Module({
-  controllers: [RunsController], providers: [RunGateway, { provide: APP_FILTER, useClass: SentryGlobalFilter }]
+  controllers: [RunsController, ObservabilityController], providers: [RunGateway, { provide: APP_FILTER, useClass: SentryGlobalFilter }]
 })
 class AppModule {
 }

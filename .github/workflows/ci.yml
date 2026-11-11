@@ -5,6 +5,13 @@ on:
 permissions:
   contents: read
 jobs:
+  images:
+    needs: [verify, containers, secrets]
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/image.yml
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -75,6 +82,44 @@ jobs:
         run: docker compose up --build --wait --wait-timeout 180
       - name: Verify UI, queue, worker, database and streamed events
         run: node scripts/smoke-compose.mjs
+      - name: Verify persisted metrics and readiness
+        run: node scripts/check-observability.mjs
+      - name: Verify metrics test catches corrupted accounting
+        run: |
+          docker compose exec -T --user root api cp apps/api/dist/observability/controller.js /tmp/observability-original.js
+          docker compose exec -T --user root api node -e 'const fs=require("fs"); const p="apps/api/dist/observability/controller.js"; const s=fs.readFileSync(p,"utf8"); const mutated=s.replace(/SUM\("promptTokens"\) AS input/, "0 AS input"); if(s===mutated)process.exit(2); fs.writeFileSync(p,mutated);'
+          docker compose restart api
+          docker compose up -d --wait --wait-timeout 180
+          if node scripts/check-observability.mjs > /tmp/metrics-mutation.log 2>&1; then
+            echo "Metrics test accepted corrupted accounting"
+            exit 1
+          fi
+          cat /tmp/metrics-mutation.log
+          grep -q 'Incorrect input_tokens' /tmp/metrics-mutation.log
+      - name: Restore metrics implementation
+        if: always()
+        run: |
+          docker compose exec -T --user root api cp /tmp/observability-original.js apps/api/dist/observability/controller.js
+          docker compose restart api
+          docker compose up -d --wait --wait-timeout 180
+          node scripts/check-observability.mjs
+      - name: Inject Redis failure
+        run: |
+          docker compose stop redis
+          EXPECT_READY=redis node scripts/check-observability.mjs
+      - name: Restore Redis
+        if: always()
+        run: docker compose start redis && docker compose up -d --wait --wait-timeout 180
+      - name: Inject PostgreSQL failure
+        run: |
+          docker compose stop postgres
+          EXPECT_READY=postgres node scripts/check-observability.mjs
+      - name: Restore PostgreSQL and verify recovery
+        if: always()
+        run: |
+          docker compose start postgres
+          docker compose up -d --wait --wait-timeout 180
+          node scripts/check-observability.mjs
       - name: Capture container logs
         if: always()
         run: docker compose logs --no-color > /tmp/orchestrator-containers.log
@@ -86,3 +131,26 @@ jobs:
       - name: Stop the test stack
         if: always()
         run: docker compose down --volumes
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan complete Git history (redacted)
+        run: |
+          docker run --rm -v "$PWD:/repo:ro" zricethezav/gitleaks:v8.24.3 detect --source=/repo --redact --no-banner
+      - name: Verify scanner rejects an injected credential
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/secret-canary"
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          Path(os.environ['RUNNER_TEMP'], 'secret-canary', 'canary.txt').write_text('token = "' + 'gh' + 'p_' + 'Ab3dE5fG7hJ9kL2mN4pQ6rS8tU0vW1xY3zA5' + '"\n')
+          PY
+          set +e
+          docker run --rm -v "$RUNNER_TEMP/secret-canary:/repo:ro" zricethezav/gitleaks:v8.24.3 detect --no-git --source=/repo --redact --no-banner
+          result=$?
+          set -e
+          test "$result" -eq 1

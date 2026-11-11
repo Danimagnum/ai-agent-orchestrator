@@ -108,6 +108,9 @@ Indexes cover newest-first `(createdAt, id)` pagination, status/date lookup, mod
 | `GET /runs/:id` | Consistent snapshot with steps and event cursor |
 | `GET /runs/:id/events?after=0` | Up to 2,000 ordered events; continue with the last sequence |
 | `GET /health` | PostgreSQL and Redis readiness, plus mock/live mode |
+| `GET /health/live` | Process liveness, independent of database/cache |
+| `GET /health/ready` | PostgreSQL and Redis checks; HTTP 503 with dependency states on failure |
+| `GET /metrics` | Prometheus text format: retained tasks, tokens, USD cost and duration by state and mock/live mode |
 
 Dates use ISO-8601 UTC timestamps. Cursors are opaque base64url `(createdAt, id)` pairs. Invalid inputs return 400; missing runs return 404.
 
@@ -176,6 +179,12 @@ GitHub Actions runs lint, typecheck, unit tests, builds, migrations and Playwrig
 - Redis runs with AOF and `noeviction`. Terminal BullMQ jobs have bounded age/count retention; durable history remains in PostgreSQL. Production needs managed backups, retention rules, health monitoring and graceful worker draining.
 
 ## Next steps
+
+Platform foundations are being added independently of Core. Core authentication, wallet, Kafka events (including health reporting), tenant isolation and Trackflow postmortems remain pending Daniel's Core **v0.2.0** tag and confirmed platform-contracts. `PLATFORM_MODE` is not yet implemented. The standalone demo remains the current execution path.
+
+The metrics are persisted-history **gauges**, not monotonic counters: retention can decrease values. Mock costs/tokens are simulated. Multiple API instances expose the same database snapshot, so deduplicate replicas instead of summing them. Duration is a sum in seconds with a separate timed-task count. API health does not assert worker progress. Infrastructure handoff and NAS limitations: [platform-infra additions](docs/platform-infra-additions.md).
+
+CI now includes dependency fault injection and a redacted full-history Gitleaks scan with an injected-secret rejection check. Successful push CI triggers the image workflow: API/worker and web images use the full commit SHA, linux/amd64, disabled attestations, and downloadable Docker archives compressed with plain gzip plus SHA-256. First GHCR publication and NAS loading must be verified before deployment; this repository does not change platform-infra.
 
 1. Authentication, tenant-scoped access, idempotent submission and per-tenant quotas.
 2. Durable checkpoints, explicit cancellation, and reconciliation of interrupted provider billing.
