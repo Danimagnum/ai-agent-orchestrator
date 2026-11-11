@@ -1,5 +1,25 @@
 # Verification record
 
+## Platform foundations — 11 November 2026
+
+Core integration is deliberately pending Daniel's Core v0.2.0 tag and confirmed platform-contracts. No platform-infra files were changed; see [infrastructure handoff](platform-infra-additions.md).
+
+Verified against an isolated five-container Docker Desktop stack (`orchestrator-foundations`) with real PostgreSQL 17 and Redis 7.4, Node 22 inside Linux images, simulated providers and empty provider credentials:
+
+- API/worker TypeScript build and production Next.js build passed.
+- `pnpm lint`, `pnpm typecheck`, and all 17 existing unit tests passed inside Node 22 Docker. Those unit tests still mock providers; the new endpoint acceptance uses real services.
+- Compose smoke passed: run `84eca416-5cc3-42a6-b0ba-17b62d4b3992`, six steps, 67 ordered events, $0.004898 **simulated** cost, persisted result and production UI.
+- `/health/live`, `/health/ready` and `/metrics` passed. All six metric families were compared with persisted REST history by state and mode.
+- Stopped the isolated Redis container: readiness returned 503 with Redis down; liveness and PostgreSQL-backed metrics remained available. Restarted Redis.
+- Stopped the isolated PostgreSQL container: readiness and metrics returned 503; liveness remained available. Restarted PostgreSQL and verified recovery.
+- Changed the running test container's token aggregation to zero: acceptance rejected it with `Incorrect input_tokens: expected 1093`. Restored the compiled controller. This modifies only a disposable test container; no source or data was deleted.
+- Gitleaks v8.24.3 scanned all 10 pre-change commits without findings. An injected synthetic credential was rejected (exit 1); output was redacted. CI repeats both checks including subsequent commits.
+- `git diff --check` passed.
+
+Not yet verified: GHCR publication/archive workflow, Docker 20.10 loading and SHA-256 transfer on the Synology, NAS memory capacity, Kafka/contract tests, health events, worker heartbeat, Core authentication/wallet/quotas, Trackflow postmortem acceptance and its live Claude video. Current endpoints report API health and PostgreSQL/Redis dependencies only. The previous Claude run below is not evidence of the new integration.
+
+The new CI container checks inject dependency failures and corrupt token aggregation, require the expected failures, restore the implementation, and verify recovery. Image publication is gated by successful push CI. Remote CI/PR evidence will be recorded after the branch is published.
+
 Verified locally on **5 November 2026**, using Node.js 24, pnpm 10.28.2, PostgreSQL 17.11 and Redis 7.4.6. CI targets Node.js 22 on Linux.
 
 | Check | Result |
