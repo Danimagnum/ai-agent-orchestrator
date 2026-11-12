@@ -1,0 +1,6 @@
+.simulation-notice { margin: 20px 30px 0; padding: 16px 20px; border: 1px solid #716dcc; background: #1b1c38; border-radius: 12px; display: grid; gap: 8px; font-size: 14px; }
+.simulation-notice strong { color: #e2dfff; }
+.simulation-notice span { color: #b7bed3; font-size: 12px; }
+.simulation-notice div { display: flex; gap: 20px; flex-wrap: wrap; }
+.simulation-notice a { color: #bcb8ff; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 600px) { .simulation-notice { margin: 14px 14px 0; padding: 14px; } }

@@ -10,6 +10,17 @@ The recording shows the actual running application in mock mode. The Playwright 
 
 Spanish acceptance guide: [Prueba final de la demo](docs/PROBAR-DEMO.md).
 
+## Browser-only portfolio demo
+
+An additional static build runs the **same orchestration engine and deterministic provider entirely in the browser**, reusing the graph and trace UI. No backend, AI API, keys or cookies are needed. Four examples include a review correction; streamed events, tokens, calculated simulated cost and tab-session history remain available after disconnecting the network once the page has loaded. Reloading clears the session.
+
+```sh
+corepack pnpm install --frozen-lockfile
+corepack pnpm build:demo
+```
+
+Upload the contents of `apps/demo/dist/` (including `.htaccess`) to the **danielgil.eu** document root under `/demos/orchestrator/`. Build size is about **0.17 MB gzip**; the locally measured cold 4G median to UI/graph ready is **2.09 seconds** (1.6 Mbps, 150 ms latency, CPU ×4). These are lab measurements, not Raiola field results. [Exact iframe HTML, FTP instructions, security fallback and verification](docs/STATIC-DEMO.md). The full API/worker application below remains a separate supported deployment.
+
 ## Run it
 
 Prerequisite: Docker with Compose v2.
@@ -180,7 +191,7 @@ GitHub Actions runs lint, typecheck, unit tests, builds, migrations and Playwrig
 
 ## Next steps
 
-Platform foundations are being added independently of Core. Core authentication, wallet, Kafka events (including health reporting), tenant isolation and Trackflow postmortems remain pending Daniel's Core **v0.2.0** tag and confirmed platform-contracts. `PLATFORM_MODE` is not yet implemented. The standalone demo remains the current execution path.
+This project is an independent service. Core integration is outside its current scope; there is no pending Core release dependency. `PLATFORM_MODE` is not implemented. The standalone application and browser-only simulated demo are the supported execution paths.
 
 The metrics are persisted-history **gauges**, not monotonic counters: retention can decrease values. Mock costs/tokens are simulated. Multiple API instances expose the same database snapshot, so deduplicate replicas instead of summing them. Duration is a sum in seconds with a separate timed-task count. API health does not assert worker progress. Infrastructure handoff and NAS limitations: [platform-infra additions](docs/platform-infra-additions.md).
 

@@ -1,5 +1,21 @@
 # Verification record
 
+## Browser-only static demo — 12 November 2026
+
+The project remains independent of Core. [Static demo deployment and exact iframe](STATIC-DEMO.md).
+
+Verified locally on Windows with Node.js 24, pnpm 10.28.2, production Vite/Next.js builds and isolated real PostgreSQL 17/Apache 2.4 Docker containers:
+
+- Shared portable engine/provider extraction: all 17 existing orchestration/provider tests, lint, typecheck and original API/Next production build passed.
+- Three event-parity tests against the real worker PostgreSQL adapter passed: coffee, broker comparison with correction, generic onboarding. Under a controlled clock and adapter schedule, full numbered event streams/token chunks and accounting agree after normalizing UUIDs, timestamps and terminal step ordering.
+- Deliberately changed browser accounting by one prompt token: parity rejected the change. CI repeats this mutation check.
+- Four Playwright tests passed against the static production folder: same-origin iframe with network disconnected before a nine-step task; three specialists active concurrently; graph, result, tokens/cost, reviewer correction and history; mobile free text/budget guard/reload state; rejected cross-origin iframe; cold 4G timing.
+- Actual delivered `.htaccess` verified by Apache Docker: 200 HTML/query routes, the requested `frame-ancestors 'self' https://danielgil.eu https://www.danielgil.eu` header and gzipped JavaScript assets.
+- Final upload files: **568,928 raw bytes**, **172,442 gzip bytes**, **148,118 Brotli bytes** (compression sums per file). Measurement report is outside the upload folder. Threshold: 2,000,000 gzip bytes.
+- Cold 4G samples: **2.1346 / 2.0155 / 2.0928 s**, median **2.0928 s** to UI/graph ready; median FCP **1.868 s**. Chromium, 1.6 Mbps down, 750 Kbps up, 150 ms latency, CPU ×4, cache disabled. Details and limits are in STATIC-DEMO.md.
+
+Not verified: live FTP upload/Raiola configuration, real danielgil.eu iframe, real-device 4G field performance, non-Chromium browser coverage, offline reload/PWA behavior (not provided), live model calls in this browser target (intentionally absent). No public hosting configuration, production data or platform-infra repository was changed. CI additionally repeats the original real-service full-stack checks and image publication gates.
+
 ## Platform foundations — 11 November 2026
 
 Core integration is deliberately pending Daniel's Core v0.2.0 tag and confirmed platform-contracts. No platform-infra files were changed; see [infrastructure handoff](platform-infra-additions.md).

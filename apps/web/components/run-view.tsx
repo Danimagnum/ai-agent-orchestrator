@@ -95,8 +95,9 @@ function Output({ step, agent }: {
       </button>
     </div>{copyError && <p role="status">{copyError}</p>}<pre className="stream-text" data-testid="agent-output">{step?.output || `${agent}’s output will appear here as the run progresses.`}{step?.status === 'running' && <span className="stream-cursor" />}</pre>{step?.error && <div className="error-banner">{step.error}</div>}</div>;
 }
-export function RunView({ id }: {
+export function RunView({ id, localDemo = false }: {
   id: string;
+  localDemo?: boolean;
 }) {
   const { run, error, connected } = useRun(id);
   const [selected, setSelected] = useState<Agent>('Director');
@@ -167,7 +168,7 @@ export function RunView({ id }: {
             <span className="outline-tag">Live topology</span>
           </div>
           <span className="connection">
-            <span className={`dot ${connected ? 'green' : 'amber'}`} />{connected ? 'Connected' : 'Reconnecting'}</span>
+            <span className={`dot ${connected ? 'green' : 'amber'}`} />{localDemo ? 'Motor en este navegador' : connected ? 'Connected' : 'Reconnecting'}</span>
         </div>
         <AgentGraph steps={run.steps} config={run.agentConfig} selected={selected} onSelect={select} />
         <div className="graph-caption">Select an agent to inspect its output<span>Delegation edges follow the trace tree</span>

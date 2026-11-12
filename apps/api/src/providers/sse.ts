@@ -28,11 +28,8 @@ export async function* readSSE(response: Response): AsyncGenerator<any> {
     reader.releaseLock();
   }
 }
-export class ProviderError extends Error {
-  constructor(message: string, readonly retryable: boolean) {
-    super(message);
-  }
-}
+import { ProviderError } from '@orchestrator/engine';
+export { ProviderError } from '@orchestrator/engine';
 export async function checked(response: Response) {
   if (!response.ok) {
     // Avoid surfacing response bodies: upstream errors can contain sensitive prompts.

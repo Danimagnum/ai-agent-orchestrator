@@ -1,0 +1,58 @@
+{
+  "environment": "Windows; Node 24; production Vite build; Playwright Chromium",
+  "date": "2026-11-12",
+  "size": {
+    "generatedAt": "2026-11-12T15:34:18.887Z",
+    "basePath": "/demos/orchestrator/",
+    "bytes": 568928,
+    "gzipBytes": 172442,
+    "brotliBytes": 148118,
+    "files": [
+      {
+        "file": ".htaccess",
+        "bytes": 1555,
+        "gzip": 664,
+        "brotli": 523
+      },
+      {
+        "file": "assets/index-C3dV_WxY.js",
+        "bytes": 519979,
+        "gzip": 161303,
+        "brotli": 138338
+      },
+      {
+        "file": "assets/index-DV0c3B1A.css",
+        "bytes": 46741,
+        "gzip": 10094,
+        "brotli": 8992
+      },
+      {
+        "file": "index.html",
+        "bytes": 653,
+        "gzip": 381,
+        "brotli": 265
+      }
+    ]
+  },
+  "network": {
+    "profile": "1.6 Mbps down / 750 Kbps up / 150 ms latency / CPU x4; Chromium cold cache; 3 samples",
+    "samples": [
+      {
+        "interactiveMs": 2134.5999999940395,
+        "fcpMs": 1884,
+        "transferredBytes": 171997
+      },
+      {
+        "interactiveMs": 2015.5,
+        "fcpMs": 1812,
+        "transferredBytes": 171997
+      },
+      {
+        "interactiveMs": 2092.7999999970198,
+        "fcpMs": 1868,
+        "transferredBytes": 171997
+      }
+    ],
+    "medianInteractiveMs": 2092.7999999970198
+  }
+}

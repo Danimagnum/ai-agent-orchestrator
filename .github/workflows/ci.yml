@@ -6,7 +6,7 @@ permissions:
   contents: read
 jobs:
   images:
-    needs: [verify, containers, secrets]
+    needs: [verify, containers, secrets, static-demo]
     if: github.event_name == 'push'
     permissions:
       contents: read
@@ -53,6 +53,15 @@ jobs:
       - run: pnpm test
       - run: pnpm build
       - run: pnpm --filter @orchestrator/api migrate
+      - name: Compare browser and PostgreSQL worker event streams
+        run: pnpm --filter @orchestrator/api exec vitest run --config vitest.parity.config.ts
+      - name: Verify parity test rejects corrupted browser accounting
+        run: |
+          if PARITY_MUTATION=1 pnpm --filter @orchestrator/api exec vitest run --config vitest.parity.config.ts > /tmp/parity-mutation.log 2>&1; then
+            echo "Parity test accepted corrupted accounting"
+            exit 1
+          fi
+          grep -q 'Browser/worker parity' /tmp/parity-mutation.log
       - name: Start API and worker
         run: |
           node apps/api/dist/main.js > /tmp/orchestrator-api.log 2>&1 &
@@ -67,6 +76,34 @@ jobs:
           path: |
             apps/web/playwright-report
             apps/web/test-results
+  static-demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:demo
+      - name: Verify upload folder with real Apache and .htaccess
+        run: node scripts/check-apache-demo.mjs
+      - run: pnpm --filter @orchestrator/demo exec playwright install --with-deps chromium
+      - run: pnpm test:demo
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: static-demo-and-browser-evidence
+          include-hidden-files: true
+          path: |
+            apps/demo/dist
+            apps/demo/build-size.json
+            apps/demo/playwright-report
+            apps/demo/test-results
   containers:
     runs-on: ubuntu-latest
     timeout-minutes: 15
