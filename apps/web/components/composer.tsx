@@ -14,7 +14,7 @@ const prompts = [
     icon: 'search', title: 'Explore an idea', text: 'Design an onboarding flow for a collaborative notes app'
   },
 ];
-export function Composer() {
+export function Composer({ localDemo = false }: { localDemo?: boolean }) {
   const router = useRouter();
   const [task, setTask] = useState('');
   const [config, setConfig] = useState<AgentConfig>(defaultAgentConfig);
@@ -73,7 +73,7 @@ export function Composer() {
           {error && <p role="alert" className="error-banner">{error}</p>}
         </form>
         <div className="starter-label">Need a starting point?</div>
-        <div className="prompt-list">{prompts.map(p => <button type="button" key={p.title} className="prompt-option" onClick={() => setTask(p.text)}>
+        <div className="prompt-list">{(localDemo ? [...prompts, { icon: 'check', title: 'Watch a review correction', text: 'Plan a landing page for a coffee shop [retry]' }] : prompts).map(p => <button type="button" key={p.title} className="prompt-option" onClick={() => setTask(p.text)}>
           <span className="prompt-icon">
             <Icon name={p.icon} />
           </span>
@@ -121,7 +121,7 @@ export function Composer() {
       <span className="demo-icon">◈</span>
       <div>
         <strong>Ready to explore. No API keys needed.</strong>
-        <p>The default demo uses deterministic agents. Configure provider keys to run with OpenAI and Anthropic.</p>
+        <p>{localDemo ? 'Todo se ejecuta en esta pestaña. Las respuestas, tokens y costes son simulados; no hay cargos ni llamadas a modelos.' : 'The default demo uses deterministic agents. Configure provider keys to run with OpenAI and Anthropic.'}</p>
       </div>
       <span className="outline-tag">Deterministic demo</span>
     </div>

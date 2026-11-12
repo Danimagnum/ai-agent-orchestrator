@@ -4,8 +4,9 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { Icon } from './icon';
-export function Shell({ children }: {
+export function Shell({ children, localDemo = false }: {
   children: React.ReactNode;
+  localDemo?: boolean;
 }) {
   const path = usePathname();
   const [health, setHealth] = useState<{
@@ -28,7 +29,7 @@ export function Shell({ children }: {
       </Link>
       <div className="workspace-label">
         <span className="workspace-avatar">P</span>
-        <span>Personal workspace<small>Local environment</small>
+        <span>{localDemo ? 'Browser workspace' : 'Personal workspace'}<small>{localDemo ? 'Session only · no server' : 'Local environment'}</small>
         </span>
       </div>
       <nav aria-label="Main navigation">
@@ -49,7 +50,7 @@ export function Shell({ children }: {
       </div>
       <div className="sidebar-bottom">
         <span className={`dot ${health ? 'green' : ''}`} />
-        <span>{health ? 'All systems operational' : 'Connecting to API'}</span>
+        <span>{localDemo ? 'Funciona sin backend' : health ? 'All systems operational' : 'Connecting to API'}</span>
         <small>v0.1</small>
       </div>
     </aside>

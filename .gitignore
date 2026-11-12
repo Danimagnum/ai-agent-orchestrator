@@ -11,3 +11,4 @@ test-results/
 *.log
 next-env.d.ts
 .artifacts/
+apps/demo/build-size.json

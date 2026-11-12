@@ -3,7 +3,7 @@ RUN corepack enable && corepack prepare pnpm@10.28.2 --activate
 WORKDIR /app
 COPY . .
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @orchestrator/shared build && pnpm --filter @orchestrator/api build
+RUN pnpm --filter @orchestrator/shared build && pnpm --filter @orchestrator/engine build && pnpm --filter @orchestrator/api build
 ENV NODE_ENV=production
 USER node
 EXPOSE 4000

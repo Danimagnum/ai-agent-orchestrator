@@ -1,13 +1,15 @@
 {
   "name": "ai-agent-orchestrator", "private": true, "packageManager": "pnpm@10.28.2",
   "scripts": {
-    "build": "pnpm --filter @orchestrator/shared build && pnpm --filter @orchestrator/api build && pnpm --filter @orchestrator/web build",
-    "typecheck": "pnpm --filter @orchestrator/shared build && pnpm -r typecheck",
+    "build": "pnpm --filter @orchestrator/shared build && pnpm --filter @orchestrator/engine build && pnpm --filter @orchestrator/api build && pnpm --filter @orchestrator/web build",
+    "typecheck": "pnpm --filter @orchestrator/shared build && pnpm --filter @orchestrator/engine build && pnpm -r typecheck",
     "lint": "eslint .",
-    "test": "pnpm --filter @orchestrator/shared build && pnpm --filter @orchestrator/api test",
+    "test": "pnpm --filter @orchestrator/shared build && pnpm --filter @orchestrator/engine build && pnpm --filter @orchestrator/api test",
     "test:e2e": "pnpm --filter @orchestrator/web test:e2e",
     "demo:check": "node scripts/check-demo.mjs",
-    "smoke:compose": "node scripts/smoke-compose.mjs"
+    "smoke:compose": "node scripts/smoke-compose.mjs",
+    "build:demo": "pnpm --filter @orchestrator/shared build && pnpm --filter @orchestrator/engine build && pnpm --filter @orchestrator/demo build",
+    "test:demo": "pnpm --filter @orchestrator/demo test:e2e"
   },
   "devDependencies": { "@eslint/js": "^9.39.0", "eslint": "^9.39.0", "typescript-eslint": "^8.46.0", "typescript": "^5.9.3", "@types/node": "^22.18.0" },
   "pnpm": { "onlyBuiltDependencies": ["esbuild", "sharp", "@sentry/cli", "@nestjs/core", "@tailwindcss/oxide"] }
